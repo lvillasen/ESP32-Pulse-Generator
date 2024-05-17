@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseGen</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="./Pulse-Generator.css">
+</head>
+<body>
+  <div class="block_container"  style="background-color: #00b5e2; margin-left:10%; margin-right:10%;">    <p> </p>
+    <p> </p>
+    <br>
+
+
+
+    <div id="block_container" >
+    <p> </p>
+    <p> </p>
+
+        <h1> Simple Pulse Generator</h1>
+        <h2> CIIEC</h2>
+        <h2> BUAP</h2>
+
+   <p style="font-size: 30px; margin-left: 80%;">May 4th, 2024 </p>
+
+        <p style="font-size: 20px; margin-left: 80%;"><a href="https://github.com/lvillasen/ESP32-Pulse-Generator-Serial" >Source Code</a> </p>
+
+        <p style="font-size: 20px; margin-left: 80%;"> </p>
+
+        <hr>
+            
+        <h2> Introduction</h2>
+
+<p style="color:black;font-size:30px;">
+This app illustrates the concept of  <a https://lastminuteengineers.com/esp32-pwm-tutorial/#:~:text=below%20support%20PWM.-,PWM%20on%20ESP32,dead%20zone%20and%20auto%2Dbraking.>pulse-with modulation (PWM)</a> using an <a href="https://en.wikipedia.org/wiki/ESP32" >ESP32 microcontroller</a>. The ESP32 can be programmed with this <a href="https://ciiec.buap.mx/Pulse-Generator/Pulse-Generator.ino" >Arduino IDE firmware</a> to generate pulses of variable widths on two GPIO pins of the ESP32 using a serial port. To program the ESP32 microcontroller you can use the <a href="https://www.arduino.cc/en/software" >Arduino IDE software</a>.
+
+<br>
+<br>
+
+The LED PWM Controller is designed primarily to drive LEDs, however you can drive any device, like a laser diode, or you can connect an oscilloscope to display a signal similar to the plot shown below. More technical details about PWM are provided on page 388 of <a href="https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf"> this reference.</a>
+
+
+
+
+</p>
+<hr>
+<button class="new_styled"  id="toggleCode" aria-pressed="false">Arduino IDE Code</button>
+
+ <pre id="code" style="background-color: lightblue; margin-left:5%; margin-right:5%;">
+
+  int  freq = 10000;   
+  int  resolution = 8;                                                                      
+  int  dutyCycle = 128; 
+  int ledPin1 = 18;
+  int ledPin2 = 19;
+  int ledChannel = 0;
+  int led = 2;
+  bool ledStatus = false;
+
+   
+  void ledcInit(){
+    ledcSetup(ledChannel, freq, resolution);
+    ledcAttachPin(ledPin1, ledChannel);
+    ledcAttachPin(ledPin2, ledChannel);
+    ledcWrite(ledChannel, dutyCycle);
+    digitalWrite(led, ledStatus);
+    delay(100);
+    digitalWrite(led, !ledStatus);
+    delay(100);
+    digitalWrite(led, ledStatus);
+  }
+
+  void setup(){
+    Serial.begin(115200);
+    pinMode(led, OUTPUT);
+    digitalWrite(led, HIGH);
+    delay(100);
+    digitalWrite(led, LOW);
+    Serial.println("Ready ...");
+  }
+
+
+  void loop() {
+    if (Serial.available() > 0) {
+      String message = Serial.readStringUntil('\n');
+      if (message.startsWith("freq:")) {
+        freq = message.substring(5).toInt();
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        Serial.println("Frequency changed: " + String(freq));
+      }
+      if (message.startsWith("duty:")) {
+        dutyCycle = message.substring(5).toInt();
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        Serial.println("Duty Cycle changed: " + String(dutyCycle));
+      }
+       if (message.startsWith("reso:")) {
+        resolution = message.substring(5).toInt();
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        Serial.println("Resolution changed: " + String(resolution));
+      }
+      if (message.startsWith("pin1:")) {
+        ledcDetachPin(ledPin1);
+        ledPin1 = message.substring(5).toInt();
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        Serial.println("Led Pin 1: " + String(ledPin1) );
+      }
+      if (message.startsWith("pin2:")) {
+        ledcDetachPin(ledPin2);
+        ledPin2 = message.substring(5).toInt();
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        Serial.println("Led Pin 2: " + String(ledPin2) );
+      } 
+      if (message.startsWith("stop")) {
+        ledcDetachPin(ledPin1);
+        ledcDetachPin(ledPin2);
+        Serial.println("Led Pin 1 and Pin 2 detached" );
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        ledStatus = false;
+        digitalWrite(led, ledStatus);
+
+      }   
+      if (message.startsWith("start")) {
+        ledcInit();
+        Serial.println("Led Pin 1 and Pin 2 atached" );
+        digitalWrite(led, !ledStatus);
+        delay(100);
+        digitalWrite(led, ledStatus);
+        ledStatus = true;
+        digitalWrite(led, ledStatus);
+      }  
+    }
+  }
+
+
+
+</pre>
+<hr>
+
+
+
+    </div>
+
+
+
+<div class="block_container" >
+
+ <input class="favorite styled" type="button" id="SerialConnectBt" value="Connect" ;>
+
+  </div>
+<hr>
+
+<div class="block_container" >
+
+
+<label id="freqLabel" style="font-size: 15pt;">Frequency (10 Hz - 40 MHz):  </label>
+<input id="freq" style="width:8%;" value="10000" type="text" onchange="send_freq()" size="10">
+<label id="resolutionsLabel" style="font-size: 15pt;">Maximum Resolution:  </label>
+<br>
+<label id="resoLabel" style="font-size: 15pt;">Resolution:  </label>
+<input id="reso" style="width:5%;" value="8" type="text" onchange="send_reso()">
+<br>
+<label id="dutyLabel" style="font-size: 15pt;">Duty Cycle:  </label>
+<input id="duty" style="width:5%;" value="128" type="text" onchange="send_duty()">
+
+<br>
+<label id="pin1Label" style="font-size: 15pt;">Pin 1:  </label>
+<input id="pin1" style="width:5%;" value="18" type="text" onchange="send_pin1()">
+<label id="pin2Label" style="font-size: 15pt;">Pin 2:  </label>
+<input id="pin2" style="width:5%;" value="19" type="text" onchange="send_pin2()"> 
+<br><br>
+
+<input class="favorite styled" type="button" id="bt_start" onclick="start()" value="Start" ;>
+
+
+<br>
+
+</div>
+
+
+<hr>    
+
+<button class="new_styled"  id="toggleXY" aria-pressed="false">Plot Pulses</button>
+
+<div id="plot_dataXY" style= " border:solid 5px #003b5c; width:100%;"></div>
+
+<hr>
+
+    
+</div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+<script src="./Pulse-Generator.js"></script>
+</html>
+
