@@ -12,7 +12,7 @@ The LED PWM Controller is designed primarily to drive LEDs, however you can driv
 - Program the ESP32 module with the ino file provided using the Arduino IDE software.
 - Open the file index.html with any web browser;
 - Connect an LED or laser diode, or any other device to pin 18 or 19.
-- Alternatively connect an oscilloscope.
+- Alternatively you can connect an oscilloscope.
 
 ## Online Demo 
 
